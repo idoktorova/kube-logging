@@ -1,0 +1,97 @@
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: fake-smtp-server
+  namespace: monitoring
+  name: fake-smtp-server
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: fake-smtp-server
+  template:
+    metadata:
+      labels:
+        app: fake-smtp-server
+    spec:
+      containers:
+      - image: reachfive/fake-smtp-server
+        name: fake-smtp-server
+        ports:
+        - containerPort: 1025
+          protocol: TCP
+        - containerPort: 1080
+          protocol: TCP
+        resources: {}
+---
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    app: fake-smtp-server
+  name: fake-smtp-server
+  namespace: monitoring
+spec:
+  ports:
+  - name: "smtp"
+    port: 1025
+    protocol: TCP
+    targetPort: 1025
+  - name: "http"
+    port: 1080
+    protocol: TCP
+    targetPort: 1080
+  selector:
+    app: fake-smtp-server
+---
+
+#apiVersion: extensions/v1beta1
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  annotations:
+#    kubernetes.io/tls-acme: "true"
+#    ingress.kubernetes.io/force-ssl-redirect: "true"
+  name: fake-smtp-server
+  namespace: monitoring
+
+spec:
+#  backend:
+#    serviceName: fake-smtp-server
+#    servicePort: 1080
+#  defaultBackend:
+#    service:
+#      name: fake-smtp-server
+#      port:
+#        number: 1080
+  rules:
+#    http:
+#      paths:
+#      - backend:
+#          serviceName: kibana
+#          servicePort: 5601
+#        path: /
+ # tls:
+ # - hosts:
+ #   - kibana.itsecforu.ru
+ #   secretName: ingress-secret   // This can be created prior if using custom certs
+#  - http:
+#      paths:
+#      - path: /server
+#        pathType: Prefix
+#        backend:
+#          service:
+#            name: fake-smtp-server
+#            port:
+#              number: 1080
+  - http:
+      paths:
+      - path: /server
+        pathType: Prefix
+        backend:
+          service:
+            name: fake-smtp-server
+            port:
+              number: 1080

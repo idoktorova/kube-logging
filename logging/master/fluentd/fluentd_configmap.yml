@@ -1,0 +1,227 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: fluentd-config
+  namespace: logging
+data:
+  fluent-bit.conf: |
+    	<system>
+	  # equal to -qq option
+	  log_level fatal
+	</system>
+
+	<source>
+	  @type gelf
+	  tag json-logs
+	  protocol_type tcp
+	  port 5000
+	  bind 0.0.0.0
+	</source>
+
+	<source>
+	  @type gelf
+	  tag json-logs
+	  port 5001
+	  bind 0.0.0.0
+	</source>
+
+	<filter json-logs**>
+	  @type parser
+	  key_name short_message
+	  reserve_data true
+	  <parse>
+	    @type json
+	  </parse>
+	</filter>
+
+	<filter json-logs**short_message>
+	  @type parser
+	  key_name message
+	  reserve_data true
+	  <parse>
+	    @type json
+	  </parse>
+	</filter>
+
+	<match json-logs**>
+	  @type elasticsearch
+	  host ext-elasticsearch-logs
+	  port 9200
+	  logstash_format true
+	  logstash_prefix ${tag}
+	  <buffer tag, time>
+	    flush_thread_count 2
+	    timekey 10
+	    timekey_wait 0s
+	  </buffer>
+	</match>
+
+
+	<source>
+	  @type syslog
+	  port 1514
+	  tag nginx
+	  message_length_limit 4096
+	</source>
+
+	<filter nginx.local1**>
+	  @type parser
+	  key_name message
+	  <parse>
+	    @type json
+	    json_parser oj
+	  </parse>
+	</filter>
+
+	<match nginx.local1**>
+	  @type elasticsearch
+	  host ext-elasticsearch-logs
+	  port 9200
+	  logstash_format true
+	  logstash_prefix nginx.access
+	  flush_interval 1s
+	  <buffer>
+	    flush_thread_count 2
+	  </buffer>
+	</match>
+
+	<match nginx.local2**>
+	  @type elasticsearch
+	  host ext-elasticsearch-logs
+	  port 9200
+	  logstash_format true
+	  logstash_prefix nginx.error
+	  flush_interval 1s
+	  <buffer>
+	    flush_thread_count 2
+	  </buffer>
+	</match>
+
+
+	<source>
+	  @type syslog
+	  port 1515
+	  <transport tcp>
+	  </transport>
+	  <parse>
+	    @type syslog
+	    with_priority true
+	    message_format auto
+	  </parse>
+	  tag audit
+	  message_length_limit 1MB
+	</source>
+
+	<source>
+	  @type syslog
+	  port 1516
+	  <transport tcp>
+	  </transport>
+	  <parse>
+	    @type syslog
+	    with_priority true
+	    message_format rfc3164
+	    time_format "%Y-%m-%dT%H:%M:%S%z"
+	  </parse>
+	  tag audit
+	  message_length_limit 1MB
+	</source>
+
+
+	<filter audit**>
+	  @type parser
+	  key_name message
+	  <parse>
+	    @type multi_format
+	    <pattern>
+	      format regexp
+	      expression /^LEEF:[0-9.]{3}\|.+\|.+\|[0-9.]{3}\|\|(?<event>.+)\|(?<eventInfo>.+)$/
+	    </pattern>    
+	    <pattern>
+	      format regexp
+	      expression /^CEF:[0-9]\|.+\|.+\|[0-9.]{3}\|(?<device_event_class_id>.+)\|(?<event>.+)\|(?<sev>.+)\|(?<eventInfo>.+)$/
+	    </pattern>        
+	  </parse> 
+	  
+	</filter>
+
+
+	<filter audit**>
+	  @type parser
+	  key_name eventInfo
+	  reserve_data true
+	  remove_key_name_field true
+	  <parse>
+	    @type ltsv
+	    delimiter_pattern /\t/
+	    label_delimiter =
+	  </parse>
+	</filter>
+
+	<match audit**>
+	  @type elasticsearch
+	  host ext-elasticsearch-logs
+	  port 9200
+	  logstash_format true
+	  logstash_prefix audit
+	  flush_interval 1s
+	  <buffer>
+	    flush_thread_count 2
+	  </buffer>
+	</match>
+
+
+	<source>
+	  @type gelf
+	  tag server
+	  #protocol_type tcp
+	  port 5002
+	  bind 0.0.0.0
+	  <parse>
+	    @type json
+	#    time_key akkaTimestamp
+	#    time_format %H:%M:%S.%N%Z
+	    json_parser oj
+	 </parse>
+	</source>
+
+	<match server>
+	  @type elasticsearch
+	  host ext-elasticsearch-logs
+	  port 9200
+	  logstash_format true
+	  logstash_prefix ${tag}
+	  flush_interval 5s
+	  <buffer>
+	    flush_thread_count 2
+	  </buffer>
+	</match>
+
+	<source>
+	  @type tcp
+	  tag feedback
+	  <parse>
+	    @type regexp
+	    expression /^(?<req_id>([^\|]*))\|(?<user_id>([^\|]*))\|(?<auth_token>([^\|]*))\|(?<event_type>([^\|]*))\|(?<message>([^\|]*))\|(?<email>([^\|]*))\|(?<os>([^\|]*))\|(?<os_version>([^\|]*))\|(?<user_agent>([^\|]*))\|(?<device_type>([^\|]*))\|(?<device_time>([^\|]*))\|(?<app_version>([^\|]*))\|(?<network>([^\|]*))\|(?<level>([^\|]*))\|(?<message>(.*))$/
+	  </parse>
+	  port 5003
+	  bind 0.0.0.0
+	</source>
+
+	<match feedback**>
+	  @type elasticsearch
+	  host ext-elasticsearch-logs
+	  port 9200
+	  logstash_format true
+	  include_timestamp true
+	  logstash_prefix ${tag}
+	  include_tag_key true
+	  reconnect_on_error true
+	  <buffer tag, time>
+	    flush_thread_count 2
+	    timekey 10
+	    timekey_wait 0s
+	  </buffer>
+	</match>mp
+		Time_Format %Y-%m-%dT%H:%M:%S.%L
+		Time_Keep   Off # on
