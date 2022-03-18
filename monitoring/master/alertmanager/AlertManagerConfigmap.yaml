@@ -6,30 +6,20 @@ metadata:
 data:
   config.yml: |-
     global:
-    templates:
-    - '/etc/alertmanager/*.tmpl'
+      smtp_smarthost: 'mail-server.monitoring.svc:1025'
+      smtp_from: 'alertmanager@example.org'
+      http_config:
+        tls_config:
+          insecure_skip_verify: true
+      smtp_require_tls: false
+
     route:
-      receiver: alert-emailer
-      group_by: ['alertname', 'priority']
-      group_wait: 10s
-      repeat_interval: 30m
-      routes:
-        - receiver: slack_demo
-        # Send severity=slack alerts to slack.
-          match:
-            severity: slack
-          group_wait: 10s
-          repeat_interval: 1m
- 
+      group_by: ['alertname']
+      group_wait: 30s
+      group_interval: 10m
+      repeat_interval: 60m
+      receiver: 'email'
     receivers:
-    - name: alert-emailer
+    - name: 'email'
       email_configs:
-      - to: demo@devopscube.com
-        send_resolved: false
-        from: from-email@email.com
-        smarthost: smtp.eample.com:25
-        require_tls: false
-    - name: slack_demo
-      slack_configs:
-      - api_url: https://hooks.slack.com/services/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sz4Qk
-        channel: '#devopscube-demo'
+      - to: test@test.test

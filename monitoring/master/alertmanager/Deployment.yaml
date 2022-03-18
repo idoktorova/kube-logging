@@ -17,9 +17,10 @@ spec:
       containers:
       - name: alertmanager
         image: prom/alertmanager:latest
-#        args:
-#          - "--config.file=/etc/alertmanager/config.yml"
-#          - "--storage.path=/alertmanager"
+        args:
+          - "--config.file=/etc/alertmanager/config.yml"
+          - "--storage.path=/alertmanager"
+          - "--web.external-url=http://130.193.42.3/monitoring/alerts"
         ports:
         - name: alertmanager
           containerPort: 9093
@@ -31,21 +32,21 @@ spec:
 #              cpu: 1
 #              memory: 1Gi
         volumeMounts:
-#        - name: config-volume
-#          mountPath: /etc/alertmanager
+        - name: config-volume
+          mountPath: /etc/alertmanager
 #        - name: templates-volume
 #          mountPath: /etc/alertmanager-templates
-#        - name: alertmanager
-#          mountPath: /alertmanager
-#      volumes:
-#      - name: config-volume
-#        configMap:
-#          name: alertmanager-config
+        - name: alertmanager
+          mountPath: /alertmanager
+      volumes:
+      - name: config-volume
+        configMap:
+          name: alertmanager-config
 #      - name: templates-volume
 #        configMap:
 #          name: alertmanager-templates
-#      - name: alertmanager
-#        emptyDir: {}
+      - name: alertmanager
+        emptyDir: {}
 ---
 apiVersion: v1
 kind: Service
@@ -105,7 +106,7 @@ spec:
 #              number: 1080
   - http:
       paths:
-      - path: /alertnamager
+      - path: /monitoring/alerts
         pathType: Prefix
         backend:
           service:
