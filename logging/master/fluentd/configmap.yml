@@ -10,18 +10,17 @@ data:
         format json
         time_format %Y-%m-%d
       </log>
-      log_level fatal
     </system>
 
     @include system.conf
     @include kubernetes.conf
 
-  system.conf: | 
+  system.conf: |
     <label @FLUENT_LOG>
     <filter fluent.**>
       @type grep
       <regexp>
-        key @log_name    
+        key @log_name
         pattern (info|warn|error|fatal)
       </regexp>
     </filter>
@@ -32,8 +31,8 @@ data:
         @type elasticsearch
         host elasticsearch.logging.svc
         port 9200
-        user elastic
-        password changeme
+        user "#{ENV['FLUENT_ELASTICSEARCH_USER']}"
+        password "#{ENV['FLUENT_ELASTICSEARCH_PASSWORD']}"
         scheme http
         logstash_format true
         logstash_prefix fluentd_info
@@ -50,7 +49,7 @@ data:
       </store>
     </match>
     </label>
-  
+
   kubernetes.conf: |
     <source>
       @type forward
@@ -64,8 +63,8 @@ data:
         @type elasticsearch
         host elasticsearch.logging.svc
         port 9200
-        user elastic
-        password changeme
+        user "#{ENV['FLUENT_ELASTICSEARCH_USER']}"
+        password "#{ENV['FLUENT_ELASTICSEARCH_PASSWORD']}"  
         scheme http
         logstash_format true
         logstash_prefix kubernetes
@@ -77,7 +76,7 @@ data:
             flush_interval 5s
         </buffer>
       </store>
- 
+
       <store>
          @type stdout
       </store>

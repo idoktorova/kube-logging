@@ -1,3 +1,4 @@
+apiVersion: extensions/v1beta1
 apiVersion: networking.k8s.io/v1
 kind: Ingress
 metadata:
@@ -5,18 +6,17 @@ metadata:
     kubernetes.io/ingress.class: nginx
 #    kubernetes.io/tls-acme: "true"
 #    ingress.kubernetes.io/force-ssl-redirect: "true"
-  name: kibana
-  namespace: logging 
-
+  name: alertmanager
+  namespace: monitoring
 spec:
   rules:
-  - host: kibana.localhost
+  - host: alertmanager.localhost
     http:
       paths:
       - path: /
         pathType: Prefix
         backend:
           service:
-            name: kibana
+            name: alertmanager
             port:
-              number: 5601
+              number: 9093
