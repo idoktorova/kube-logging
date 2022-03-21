@@ -12,7 +12,6 @@ data:
     #
     xpack.license.self_generated.type: basic
     xpack.security.enabled: false
-
     cluster.name: full-stack-cluster
     node.name: node-1
     path.data: /usr/share/elasticsearch/data
