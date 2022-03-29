@@ -5,13 +5,14 @@ metadata:
     app: mail-server
   name: mail-server
   namespace: monitoring
+  
 spec:
   ports:
   - name: "smtp"
     port: 1025
     protocol: TCP
     targetPort: "smtp"
-  - name: "http-port"
+  - name: "http"
     port: 1080
     protocol: TCP
     targetPort: "http"

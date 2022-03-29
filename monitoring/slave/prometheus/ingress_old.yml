@@ -1,22 +1,18 @@
-apiVersion: networking.k8s.io/v1
+apiVersion: networking.k8s.io/v1beta1
 kind: Ingress
 metadata:
   annotations:
     kubernetes.io/ingress.class: nginx
 #    kubernetes.io/tls-acme: "true"
 #    ingress.kubernetes.io/force-ssl-redirect: "true"
-
-  name: mail-server
-  namespace: monitoring
+  name: prometheus
+  namespace: monitoring 
 spec:
   rules:
-  - host: mail-server.localhost
+  - host: prometheus.slave
     http:
       paths:
       - path: /
-        pathType: Prefix
         backend:
-          service:
-            name: mail-server
-            port:
-              number: 1080
+          serviceName: prometheus
+          servicePort: 9090

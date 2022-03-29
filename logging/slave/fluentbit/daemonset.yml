@@ -1,35 +1,25 @@
 apiVersion: apps/v1
 kind: DaemonSet
 metadata:
-  name: fluent-bit
+  name: fluentbit
   namespace: logging
   labels:
-    k8s-app: fluent-bit-logging
-    version: v1
-    kubernetes.io/cluster-service: "true"
+    app: fluentbit
 spec:
   selector:
     matchLabels:
-      name: fluent-bit
+      name: fluentbit
   template:
     metadata:
       labels:
-        name: fluent-bit
-        k8s-app: fluent-bit-logging
-        version: v1
-        kubernetes.io/cluster-service: "true"
+        app: fluentbit
     spec:
       containers:
-      - name: fluent-bit
+      - name: fluentbit
         image: fluent/fluent-bit:1.6.0
         imagePullPolicy: Always
         ports:
           - containerPort: 2020
-        env:
-        - name: FLUENTD_HOST
-          value: "127.0.0.1" #YOUR FLUENTD HOST IP
-        - name: FLUENTD_PORT
-          value: "24224"        
         volumeMounts:
         - name: varlog
           mountPath: /var/log

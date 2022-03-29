@@ -1,30 +1,20 @@
-#apiVersion: extensions/v1beta1
 apiVersion: networking.k8s.io/v1
 kind: Ingress
 metadata:
-  name: prometheus-ui
+  name: prometheus
   namespace: monitoring
-  annotations:
   annotations:
     kubernetes.io/ingress.class: nginx
 #    nginx.ingress.kubernetes.io/rewrite-target: /
 #    nginx.ingress.kubernetes.io/use-regex: "true"  
-
 spec:
   rules:
-  - host: localhost
-    http:
+  - http:
       paths:
-      - path: /
+      - path: prometheus.slave
         pathType: Prefix
         backend:
           service:
-            name: prometheus-service
+            name: prometheus
             port:
-              number: 8080
-#  rules:
-#  - http:
-#      paths:
-#      - backend:
-#          serviceName: prometheus-service
-#          servicePort: 8080
+              number: 9090

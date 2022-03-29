@@ -1,20 +1,7 @@
-#apiVersion: v1
-#kind: Service
-#metadata:
-#  name: kibana
-#  namespace: logging
-#  labels:
-#    app: kibana
-#spec:
-#  ports:
-#  - port: 5601
-#  selector:
-#    app: kibana
----
 apiVersion: v1
 kind: Service
 metadata:
-  name: kibana-nodeport
+  name: kibana
   namespace: logging
   labels:
     app: kibana
