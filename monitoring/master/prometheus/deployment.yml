@@ -1,24 +1,24 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: prometheus
+  name: prometheus-master
   namespace: monitoring
   labels:
-    app: prometheus
+    app: prometheus-master
 spec:
   replicas: 1
   selector:
     matchLabels:
-      app: prometheus
+      app: prometheus-master
   template:
     metadata:
       labels:
-        app: prometheus
+        app: prometheus-master
     spec:
       serviceAccount: prometheus
       serviceAccountName: prometheus
       containers:
-        - name: prometheus
+        - name: prometheus-master
           image: prom/prometheus
           args:
             - "--config.file=/etc/prometheus/prometheus.yml"
@@ -36,6 +36,6 @@ spec:
         - name: prometheus-config-volume
           configMap:
             defaultMode: 420
-            name: prometheus-config
+            name: prometheus-master-config
         - name: prometheus-storage-volume
           emptyDir: {}

@@ -1,9 +1,9 @@
 apiVersion: v1
 kind: ConfigMap
 metadata:
-  name: prometheus-conf
+  name: prometheus-master-config
   labels:
-    name: prometheus-conf
+    name: prometheus-master-config
   namespace: monitoring
 data:
   prometheus.rules: |-
@@ -36,6 +36,8 @@ data:
       params:
         match[]:
         - '{job=~".+"}'
+        - '{job="prometheus"}'
+        - '{__name__=~"job:.*"}'
       static_configs:
         - targets:
-          - prometheus.slave
+          - prometheus-slave.localhost:9090

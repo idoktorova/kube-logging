@@ -9,7 +9,7 @@ metadata:
 #    nginx.ingress.kubernetes.io/use-regex: "true"  
 spec:
   rules:
-  - host: prometheus.slave 
+  - host: prometheus-slave.localhost
     http:
       paths:
       - path: /

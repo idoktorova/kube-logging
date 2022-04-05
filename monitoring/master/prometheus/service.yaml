@@ -1,7 +1,7 @@
 apiVersion: v1
 kind: Service
 metadata:
-  name: prometheus
+  name: prometheus-master
   namespace: monitoring
   annotations:
       app: prometheus
@@ -9,9 +9,9 @@ metadata:
 #      prometheus.io/port:   '9090'
 spec:
   selector: 
-    app: prometheus
+    app: prometheus-master
   ports:
   - name: "http"
-    port: 9090
+    port: 9095
     protocol: TCP
     targetPort: "http"
