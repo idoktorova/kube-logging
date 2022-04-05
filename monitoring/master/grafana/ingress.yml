@@ -10,7 +10,7 @@ metadata:
 
 spec:
   rules:
-  - hosts: grafana.localhost
+  - host: grafana.localhost
     http:
       paths:
       - path: /

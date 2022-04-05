@@ -9,10 +9,10 @@ metadata:
   namespace: monitoring 
 spec:
   rules:
-  - host: prometheus.slave
+  - host: alertmanager.localhost
     http:
       paths:
       - path: /
         backend:
-          serviceName: prometheus
-          servicePort: 9090
+          serviceName: alertmanager
+          servicePort: 9093

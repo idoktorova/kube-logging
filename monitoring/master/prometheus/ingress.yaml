@@ -10,7 +10,7 @@ metadata:
 spec:
   rules:
   - host: prometheus-master.localhost
-  - http:
+    http:
       paths:
       - path: /
         pathType: Prefix

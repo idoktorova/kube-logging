@@ -9,10 +9,10 @@ metadata:
   namespace: monitoring 
 spec:
   rules:
-  - host: prometheus.master
+  - host: prometheus-master.localhost
     http:
       paths:
       - path: /
         backend:
-          serviceName: prometheus
+          serviceName: prometheus-master
           servicePort: 9090

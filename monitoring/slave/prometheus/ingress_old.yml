@@ -9,7 +9,7 @@ metadata:
   namespace: monitoring 
 spec:
   rules:
-  - host: prometheus.slave
+  - host: prometheus-slave.localhost
     http:
       paths:
       - path: /
