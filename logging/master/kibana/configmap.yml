@@ -16,11 +16,11 @@ data:
     #
     elasticsearch.username: ${ELASTICSEARCH_USER}
     elasticsearch.password: ${ELASTICSEARCH_PASSWORD}
-    elasticsearch.ssl.verificationMode: none
-    status.allowAnonymous: true
+    #elasticsearch.ssl.verificationMode: none
+    #status.allowAnonymous: true
     # xpack.monitoring.enabled: false
     # xpack.monitoring.ui.container.elasticsearch.enabled: false
     # xpack.monitoring.kibana.collection.enabled: false
-     xpack.security.enabled: false
-     logging.silent: false
-     logging.quiet: false
+    #xpack.security.enabled: false
+    #logging.silent: false
+    #logging.quiet: false

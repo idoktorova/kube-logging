@@ -3,13 +3,15 @@ kind: Service
 metadata:
   name: elasticsearch
   namespace: logging
-  labels:
-    app: elasticsearch
 spec:
   ports:
   - port: 9200
+    protocol: TCP
+    targetPort: 9200
     name: client
   - port: 9300
+    protocol: TCP
     name: transport
+    targetPort: 9300
   selector:
     app: elasticsearch

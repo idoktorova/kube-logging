@@ -1,7 +1,7 @@
 apiVersion: networking.k8s.io/v1
 kind: Ingress
 metadata:
-  name: kibana
+  name: elasticsearch
   namespace: logging
   annotations:
     kubernetes.io/ingress.class: nginx
@@ -9,13 +9,13 @@ metadata:
 #    nginx.ingress.kubernetes.io/use-regex: "true"  
 spec:
   rules:
-  - host: kibana.localhost
+  - host: elasticserach.localhost
     http:
       paths:
       - path: /
         pathType: Prefix
         backend:
           service:
-            name: kibana
+            name: elasticsearch
             port:
-              number: 5601
+              number: 9200

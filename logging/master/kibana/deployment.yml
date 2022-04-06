@@ -17,7 +17,7 @@ spec:
     spec:
       containers:
       - name: kibana
-        image: docker.elastic.co/kibana/kibana:8.0.0
+        image: kibana:8.0.0
 #        resources:
 #          limits:
 #            cpu: 1000m
@@ -25,7 +25,7 @@ spec:
 #            cpu: 100m
         ports:
         - containerPort: 5601
-          name: kibana-ui
+          name: ui
         env:
         - name: ELASTICSEARCH_USER
           valueFrom:
