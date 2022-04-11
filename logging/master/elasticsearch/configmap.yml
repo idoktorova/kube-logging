@@ -14,7 +14,7 @@ data:
     xpack.security.enabled: false
     cluster.name: full-stack-cluster
     node.name: node-1
-    path.data: /usr/share/elasticsearch/data
+    path.data: /data
     http:
       host: 0.0.0.0
       port: 9200

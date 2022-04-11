@@ -8,7 +8,7 @@ metadata:
 spec:
   selector:
     matchLabels:
-      name: fluent-bit
+      app: fluent-bit
   template:
     metadata:
       labels:
@@ -34,9 +34,9 @@ spec:
           mountPath: /fluent-bit/etc/
         env:
         - name: FLUENTD_HOST
-          value: fluentd.logging.svc
+          value: "fluentd.logging.svc"
         - name: FLUENTD_PORT
-          value: 9880
+          value: "9880"
       terminationGracePeriodSeconds: 10
       volumes:
       - name: varlog

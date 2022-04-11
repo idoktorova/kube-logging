@@ -29,8 +29,8 @@ data:
     [OUTPUT]
         Name          forward
         Match         *
-        Host          ${FLUENTD_HOST}
         Port          ${FLUENTD_PORT}
+        Host          ${FLUENTD_HOST}
         Retry_Limit   False
   parsers.conf: |
     [PARSER]

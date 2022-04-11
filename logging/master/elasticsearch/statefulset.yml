@@ -18,7 +18,7 @@ spec:
     spec:
       containers:
       - name: elasticsearch
-        image: elasticsearch:8.0.0
+        image: elasticsearch:8.1.0
         imagePullPolicy: IfNotPresent
         env:
         - name: ES_JAVA_OPTS
@@ -37,10 +37,10 @@ spec:
 #            memory: "2147483648"
         volumeMounts:
         - name: config
-          mountPath: /usr/share/elasticsearch/elasticsearch.yml
-          subPath: elasticsearch.yml
+          mountPath: /usr/share/elasticsearch/config/elasticsearch.yml
+          subPath: elasticsearch.yml 
         - name: data
-          mountPath: /usr/share/elasticsearch/data
+          mountPath: /data
       securityContext:
         fsGroup: 1000
       serviceAccount: elasticsearch
@@ -61,7 +61,7 @@ spec:
       - name: volume-mount-hack
         image: busybox
         imagePullPolicy: IfNotPresent
-        command: ["sh", "-c", "chown -R 1000:100 /usr/share/elasticsearch/data"]
+        command: ["sh", "-c", "chown -R 1000:100 /data"]
         volumeMounts:
         - name: data
-          mountPath: /usr/share/elasticsearch/data
+          mountPath: /data

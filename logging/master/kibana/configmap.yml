@@ -10,17 +10,16 @@ data:
     server.host: "0.0.0.0"
     #server.basePath: "/api/v1/proxy/namespaces/kibana/services/kibana-logging"
     elasticsearch.hosts: ["http://elasticsearch.logging.svc:9200"]
-    monitoring.ui.container.elasticsearch.enabled: true
-
+    #monitoring.ui.container.elasticsearch.enabled: true
+    xpack.fleet.agents.enabled: false
     ## X-Pack security credentials
     #
-    elasticsearch.username: ${ELASTICSEARCH_USER}
-    elasticsearch.password: ${ELASTICSEARCH_PASSWORD}
+    #elasticsearch.username: ${ELASTICSEARCH_USER}
+    #elasticsearch.password: ${ELASTICSEARCH_PASSWORD}
     #elasticsearch.ssl.verificationMode: none
     #status.allowAnonymous: true
     # xpack.monitoring.enabled: false
     # xpack.monitoring.ui.container.elasticsearch.enabled: false
     # xpack.monitoring.kibana.collection.enabled: false
-    #xpack.security.enabled: false
     #logging.silent: false
     #logging.quiet: false
