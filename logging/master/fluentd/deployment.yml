@@ -17,9 +17,6 @@ spec:
     spec:
       serviceAccount: fluentd
       serviceAccountName: fluentd
-#      tolerations:
-#      - key: node-role.kubernetes.io/master
-#        effect: NoSchedule
       containers:
       - name: fluentd
         imagePullPolicy: IfNotPresent
@@ -36,9 +33,9 @@ spec:
               secretKeyRef:
                 key: password
                 name: elasticsearch-creds
-          - name:  FLUENT_ELASTICSEARCH_HOST
+          - name:  ELASTICSEARCH_HOST
             value: "elasticsearch.logging.svc"
-          - name:  FLUENT_ELASTICSEARCH_PORT
+          - name:  ELASTICSEARCH_PORT
             value: "9200"
           - name: FLUENT_ELASTICSEARCH_SCHEME
             value: "http"
@@ -49,12 +46,9 @@ spec:
 #            cpu: 100m
 #            memory: 200Mi
         ports:
-        - containerPort: 9292
-          name: ui
-          protocol: TCP
+        - containerPort: 9881
         - containerPort: 9880
-          name: fluentbit
-          protocol: TCP
+        - containerPort: 9882
         volumeMounts:
          - name: fluentd-config
            mountPath: /fluentd/etc

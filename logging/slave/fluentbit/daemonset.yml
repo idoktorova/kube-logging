@@ -30,6 +30,9 @@ spec:
         - name: varlibdockercontainers
           mountPath: /var/lib/docker/containers
           readOnly: true
+        - name: journal
+          mountPath: /journal
+          readOnly: true
         - name: config
           mountPath: /fluent-bit/etc/
         env:
@@ -39,6 +42,9 @@ spec:
           value: "9880"
       terminationGracePeriodSeconds: 10
       volumes:
+      - name: journal
+        hostPath:
+          path: /var/log/journal
       - name: varlog
         hostPath:
           path: /var/log

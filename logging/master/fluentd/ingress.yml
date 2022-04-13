@@ -7,16 +7,16 @@ metadata:
     kubernetes.io/ingress.class: nginx
 spec:
   rules:
-  - host: fluentd.localhost
-    http:
-      paths:
-      - path: /
-        pathType: Prefix
-        backend:
-          service:
-            name: fluentd
-            port:
-              number: 9292
+#  - host: fluentd.localhost
+#    http:
+#      paths:
+#      - path: /
+#        pathType: Prefix
+#        backend:
+##          service:
+#            name: fluentd
+#            port:
+#              number: 9292
   - host: fluentd-logs.localhost
     http:
       paths:

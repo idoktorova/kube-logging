@@ -11,30 +11,20 @@ data:
         time_format %Y-%m-%d
       </log>
     </system>
-    @include system.conf
     @include kubernetes.conf
-
+  
   system.conf: |
-    <label @FLUENT_LOG>
-    <filter fluent.**>
-      @type grep
-      <regexp>
-        key @log_name
-        pattern (info|warn|error|fatal)
-      </regexp>
-    </filter>
-
     <match fluent.**>
       @type copy
       <store>
         @type elasticsearch
-        host elasticsearch.logging.svc
-        port 9200
+        host "#{ENV['ELASTICSEARCH_HOST']}"
+        port "#{ENV['ELASTICSEARCH_PORT']}"
         user "#{ENV['FLUENT_ELASTICSEARCH_USER']}"
         password "#{ENV['FLUENT_ELASTICSEARCH_PASSWORD']}"
         scheme http
         logstash_format true
-        logstash_prefix fluentd_info
+        logstash_prefix fluentd-info
         logstash_dateformat %Y%m%d
         include_tag_key true
         type_name access_log
@@ -47,26 +37,25 @@ data:
         @type stdout
       </store>
     </match>
-    </label>
 
   kubernetes.conf: |
     <source>
       @type forward
-      port 9880
+      port 9882
       bind 0.0.0.0
     </source>
-
+ 
     <match *.**>
       @type copy
       <store>
         @type elasticsearch
         host elasticsearch.logging.svc
         port 9200
-        user "#{ENV['FLUENT_ELASTICSEARCH_USER']}"
-        password "#{ENV['FLUENT_ELASTICSEARCH_PASSWORD']}"  
+        user "#{ENV['ELASTICSEARCH_USER']}"
+        password "#{ENV['ELASTICSEARCH_PASSWORD']}"  
         scheme http
         logstash_format true
-        logstash_prefix kubernetes
+        logstash_prefix logging
         logstash_dateformat %Y%m%d
         include_tag_key true
         type_name access_log

@@ -10,10 +10,35 @@ data:
         Log_Level     info
         Parsers_File  parsers.conf
         Daemon        off
-        
-    @INCLUDE all_container_input.conf
-    @INCLUDE output-fleuntd-forward.conf
-  all_container_input.conf: |
+    @INCLUDE input-kubernetes.conf
+    @INCLUDE filter-kubernetes.conf
+    @INCLUDE output-fluentd-logging.conf
+
+  input-kubernetes.conf: |
+    [INPUT]
+        Name              tail
+        Tag               kube.*
+        Path              /var/log/containers/*.log
+        Parser            docker
+        DB                /var/log/flb_kube.db
+        Mem_Buf_Limit     5MB
+        Skip_Long_Lines   On
+        Refresh_Interval  10
+
+  filter-kubernetes.conf: |
+    [FILTER]
+        Name                kubernetes
+        Match               kube.*
+        Kube_URL            https://kubernetes.default.svc:443
+        Kube_CA_File        /var/run/secrets/kubernetes.io/serviceaccount/ca.crt
+        Kube_Token_File     /var/run/secrets/kubernetes.io/serviceaccount/token
+        Kube_Tag_Prefix     kube.var.log.containers.
+        Merge_Log           On
+        Merge_Log_Key       log_processed
+        K8S-Logging.Parser  On
+        K8S-Logging.Exclude Off
+
+  1input_kubernetes.conf: |
     [INPUT]
         Name              tail
         Tag               <container_name>-<namespace_name>
@@ -25,13 +50,54 @@ data:
         Skip_Long_Lines   On
         Refresh_Interval  5
         Docker_Mode       On
-  output-fleuntd-forward.conf: |
+
+  output-stdout.conf: |
+    [OUTPUT]
+        Name          stdout
+        Match         *
+
+  output-fluentd-containers.conf: |
+    [FILTER]
+        Name    grep
+        Match   kube.*
+        Regexp  $kubernetes['namespace_name'] dee
+       	Tag    	dee
+
     [OUTPUT]
         Name          forward
-        Match         *
-        Port          ${FLUENTD_PORT}
+        Match         dee
+        Port          9880
         Host          ${FLUENTD_HOST}
         Retry_Limit   False
+
+  output-fluentd-system.conf: |
+    [FILTER]
+        Name    grep
+        Match   kube.*
+        Regexp  $kubernetes['namespace_name'] kube-system
+        Tag     kube-system
+
+    [OUTPUT]
+        Name          forward
+        Match         kube-system
+        Port          9881
+        Host          ${FLUENTD_HOST}
+        Retry_Limit   False
+
+  output-fluentd-logging.conf: |
+    [FILTER]
+        Name    grep
+        Match   kube.*
+        Regexp  $kubernetes['namespace_name'] logging
+       	Tag    	logging
+
+    [OUTPUT]
+        Name          forward
+        Match         logging
+        Port          9882
+        Host          ${FLUENTD_HOST}
+        Retry_Limit   False
+
   parsers.conf: |
     [PARSER]
         Name        json
