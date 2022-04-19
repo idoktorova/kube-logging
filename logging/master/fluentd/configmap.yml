@@ -41,31 +41,73 @@ data:
   kubernetes.conf: |
     <source>
       @type forward
-      port 9882
+      port 9880
       bind 0.0.0.0
     </source>
- 
-    <match *.**>
-      @type copy
-      <store>
-        @type elasticsearch
-        host elasticsearch.logging.svc
-        port 9200
-        user "#{ENV['ELASTICSEARCH_USER']}"
-        password "#{ENV['ELASTICSEARCH_PASSWORD']}"  
-        scheme http
-        logstash_format true
-        logstash_prefix logging
-        logstash_dateformat %Y%m%d
-        include_tag_key true
-        type_name access_log
-        tag_key @log_name
-        <buffer>
-            flush_interval 5s
-        </buffer>
-      </store>
 
-      <store>
-         @type stdout
-      </store>
+    <match dee kube-system logging ingress-nginx>
+      @type copy
+      <store> 
+      @type elasticsearch
+      @log_level "info"
+      with_transporter_log true
+      host "#{ENV['ELASTICSEARCH_HOST']}"
+      port "#{ENV['ELASTICSEARCH_PORT']}"
+      user "#{ENV['ELASTICSEARCH_USER']}"
+      password "#{ENV['ELASTICSEARCH_PASSWORD']}"
+
+      scheme http
+      #rollover_index true
+      #template_name kuber
+      #template_file /fluentd/etc/template.mapping
+      logstash_format true
+      logstash_prefix ${tag}
+      include_tag_key true
+      type_name access_log
+      tag_key @log_name
+      #enable_ilm false
+      #ilm_policy {}
+      #ilm_policy_id "kuber-policy"
+      #ilm_policy_overwrite false
+      #log_es_400_reason true
+      reconnect_on_error true
+      reload_on_failure true
+      reload_connections false
+
+      <buffer>
+          @type file
+          path /var/log/fluent/myapp.*.buffer
+          flush_interval 5s
+      </buffer>
+     </store>
      </match>
+
+  template.mapping: |
+    {
+       "order": 2,
+       "index_patterns": [
+           "logging*"
+       ],
+       "settings": {
+       "index": {
+           "lifecycle": {
+           "name": "kuber-policy",
+           "rollover_alias": "kuber"
+       },
+       "codec": "best_compression",
+       "routing": {
+         "allocation": {
+           "require": {
+             "box_type": "ssd"
+           }
+         }
+       },
+       "refresh_interval": "5s",
+       "number_of_shards": "1",
+       "number_of_replicas": "2"
+      }
+    },
+    "mappings": {},
+    "aliases": {}
+    }
+

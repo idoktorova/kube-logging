@@ -9,7 +9,7 @@
 #      targetPort: ui
 #  selector:
 #    app: fluentd
-#---
+---
 apiVersion: v1
 kind: Service
 metadata:
@@ -22,9 +22,3 @@ spec:
     - port: 9880
       targetPort: 9880
       name: test
-    - port: 9881
-      targetPort: 9881
-      name: test1
-    - port: 9882
-      targetPort: 9882
-      name: test2

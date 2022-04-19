@@ -12,7 +12,8 @@ data:
         Daemon        off
     @INCLUDE input-kubernetes.conf
     @INCLUDE filter-kubernetes.conf
-    @INCLUDE output-fluentd-logging.conf
+    @INCLUDE output-fluentd.conf
+
 
   input-kubernetes.conf: |
     [INPUT]
@@ -38,63 +39,17 @@ data:
         K8S-Logging.Parser  On
         K8S-Logging.Exclude Off
 
-  1input_kubernetes.conf: |
-    [INPUT]
-        Name              tail
-        Tag               <container_name>-<namespace_name>
-        Tag_Regex         (?<pod_name>[a-z0-9]([-a-z0-9]*[a-z0-9])?(\.[a-z0-9]([-a-z0-9]*[a-z0-9])?)*)_(?<namespace_name>[^_]+)_(?<container_name>.+)-
-        Parser            docker
-        Path              /var/log/containers/*
-        DB                /var/log/flb_kube.db
-        Mem_Buf_Limit     5MB
-        Skip_Long_Lines   On
-        Refresh_Interval  5
-        Docker_Mode       On
+    [FILTER]
+        Name          rewrite_tag
+        Match         kube.*
+        Rule          $kubernetes['namespace_name'] ^(.*)$  $kubernetes['namespace_name']  false
+        Emitter_Name  re_emitted
 
-  output-stdout.conf: |
+  output-fluentd.conf: |
     [OUTPUT]
-        Name          stdout
+        Name          forward
         Match         *
-
-  output-fluentd-containers.conf: |
-    [FILTER]
-        Name    grep
-        Match   kube.*
-        Regexp  $kubernetes['namespace_name'] dee
-       	Tag    	dee
-
-    [OUTPUT]
-        Name          forward
-        Match         dee
-        Port          9880
-        Host          ${FLUENTD_HOST}
-        Retry_Limit   False
-
-  output-fluentd-system.conf: |
-    [FILTER]
-        Name    grep
-        Match   kube.*
-        Regexp  $kubernetes['namespace_name'] kube-system
-        Tag     kube-system
-
-    [OUTPUT]
-        Name          forward
-        Match         kube-system
-        Port          9881
-        Host          ${FLUENTD_HOST}
-        Retry_Limit   False
-
-  output-fluentd-logging.conf: |
-    [FILTER]
-        Name    grep
-        Match   kube.*
-        Regexp  $kubernetes['namespace_name'] logging
-       	Tag    	logging
-
-    [OUTPUT]
-        Name          forward
-        Match         logging
-        Port          9882
+        Port          ${FLUENTD_PORT}
         Host          ${FLUENTD_HOST}
         Retry_Limit   False
 
@@ -104,6 +59,7 @@ data:
         Format      json
         Time_Key    time
         Time_Format %d/%b/%Y:%H:%M:%S %z
+
     [PARSER]
         Name        docker
         Format      json

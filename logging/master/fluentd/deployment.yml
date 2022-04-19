@@ -23,12 +23,12 @@ spec:
 #        image: fluent/fluentd:edge-debian
         image: docker-logging_fluentd:latest
         env:
-          - name: FLUENT_ELASTICSEARCH_USER
+          - name: ELASTICSEARCH_USER
             valueFrom: 
               secretKeyRef: 
                 key: username
                 name: elasticsearch-creds
-          - name: FLUENT_ELASTICSEARCH_PASSWORD
+          - name: ELASTICSEARCH_PASSWORD
             valueFrom:
               secretKeyRef:
                 key: password
@@ -46,9 +46,7 @@ spec:
 #            cpu: 100m
 #            memory: 200Mi
         ports:
-        - containerPort: 9881
-        - containerPort: 9880
-        - containerPort: 9882
+         - containerPort: 9881
         volumeMounts:
          - name: fluentd-config
            mountPath: /fluentd/etc
