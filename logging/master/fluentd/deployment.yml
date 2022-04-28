@@ -17,11 +17,22 @@ spec:
     spec:
       serviceAccount: fluentd
       serviceAccountName: fluentd
+
+      initContainers:
+      - name: elastic-ilm-hack
+        image: yauritux/busybox-curl
+        imagePullPolicy: IfNotPresent
+        command: ["/bin/entrypoint.sh"]
+        volumeMounts:
+          - name: fluentd-ilm
+            mountPath: /bin/entrypoint.sh
+            readOnly: true
+            subPath: entrypoint.sh
       containers:
       - name: fluentd
         imagePullPolicy: IfNotPresent
 #        image: fluent/fluentd:edge-debian
-        image: docker-logging_fluentd:latest
+        image: test_fluent:latest
         env:
           - name: ELASTICSEARCH_USER
             valueFrom: 
@@ -55,3 +66,8 @@ spec:
       - name: fluentd-config
         configMap:
           name: fluentd-config
+      - name: fluentd-ilm
+        configMap:
+          defaultMode: 0700
+          name: fluentd-ilm
+

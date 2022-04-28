@@ -1,6 +1,17 @@
 apiVersion: v1
 kind: ConfigMap
 metadata:
+  name: fluentd-ilm
+  namespace: logging
+data:
+  entrypoint.sh: |
+    #!/bin/sh
+    curl -X PUT "http://elasticsearch.logging.svc:9200/_ilm/policy/kube-logs" -H'Content-Type: application/json' -d '{"policy":{"phases":{"hot":{"min_age":"0ms","actions":{"rollover":{"max_age":"3d","max_size":"10gb"}}},"delete":{"min_age":"1d","actions":{"delete":{}}}}}}'
+    curl -X PUT "http://elasticsearch.logging.svc:9200/_ilm/policy/dee-logs" -H'Content-Type: application/json' -d '{"policy":{"phases":{"hot":{"min_age":"0ms","actions":{"rollover":{"max_age":"3d","max_size":"10gb"}}},"delete":{"min_age":"1d","actions":{"delete":{}}}}}}'  
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
   name: fluentd-config
   namespace: logging
 data:
@@ -45,69 +56,114 @@ data:
       bind 0.0.0.0
     </source>
 
-    <match dee kube-system logging ingress-nginx>
+    <match dee>
       @type copy
-      <store> 
+      <store>
       @type elasticsearch
-      @log_level "info"
+      @log_level info
+      @id dee
       with_transporter_log true
+
       host "#{ENV['ELASTICSEARCH_HOST']}"
       port "#{ENV['ELASTICSEARCH_PORT']}"
       user "#{ENV['ELASTICSEARCH_USER']}"
       password "#{ENV['ELASTICSEARCH_PASSWORD']}"
-
+      default_elasticsearch_version 8
+      verify_es_version_at_startup true
       scheme http
-      #rollover_index true
-      #template_name kuber
-      #template_file /fluentd/etc/template.mapping
+
+      rollover_index true
+      template_name dee-logs
+      template_file /fluentd/etc/dee-logs.mapping
       logstash_format true
       logstash_prefix ${tag}
       include_tag_key true
       type_name access_log
       tag_key @log_name
-      #enable_ilm false
-      #ilm_policy {}
-      #ilm_policy_id "kuber-policy"
-      #ilm_policy_overwrite false
-      #log_es_400_reason true
+
+      enable_ilm true
+      ilm_policy {}
+      ilm_policy_id dee-logs
+      #ilm_policy_overwrite  true
+
+      log_es_400_reason true
       reconnect_on_error true
       reload_on_failure true
       reload_connections false
-
       <buffer>
           @type file
-          path /var/log/fluent/myapp.*.buffer
+          path /var/log/fluent/dee-logs.*.buffer
           flush_interval 5s
       </buffer>
      </store>
      </match>
 
-  template.mapping: |
+
+    <match kube-system logging ingress-nginx>
+      @type copy
+      <store> 
+      @type elasticsearch
+      @log_level info
+      @id system
+      with_transporter_log true
+      host "#{ENV['ELASTICSEARCH_HOST']}"
+      port "#{ENV['ELASTICSEARCH_PORT']}"
+      user "#{ENV['ELASTICSEARCH_USER']}"
+      password "#{ENV['ELASTICSEARCH_PASSWORD']}"
+      default_elasticsearch_version 8
+      verify_es_version_at_startup true
+      scheme http
+      rollover_index true
+      template_name kube-logs
+      template_file /fluentd/etc/kube-logs.mapping
+      logstash_format true
+      logstash_prefix ${tag}
+      include_tag_key true
+      type_name access_log
+      tag_key @log_name
+      enable_ilm true
+      ilm_policy {}
+      ilm_policy_id kube-logs
+      #ilm_policy_overwrite  true
+      log_es_400_reason true
+      reconnect_on_error true
+      reload_on_failure true
+      reload_connections false
+      <buffer>
+          @type file
+          path /var/log/fluent/kube-logs.*.buffer
+          flush_interval 5s
+      </buffer>
+     </store>
+     </match>
+
+  kube-logs.mapping: |
     {
-       "order": 2,
        "index_patterns": [
-           "logging*"
+         "kube-system*",
+         "ingress-nginx*",
+         "logging*"
+       ],                   
+       "template": {
+          "settings": {
+            "number_of_shards": 1,
+            "number_of_replicas": 1,
+            "index.lifecycle.name": "kube-logs"     
+          } 
+        }
+    } 
+
+  dee-logs.mapping: |
+    {
+       "index_patterns": [
+         "dee*"
        ],
-       "settings": {
-       "index": {
-           "lifecycle": {
-           "name": "kuber-policy",
-           "rollover_alias": "kuber"
-       },
-       "codec": "best_compression",
-       "routing": {
-         "allocation": {
-           "require": {
-             "box_type": "ssd"
-           }
-         }
-       },
-       "refresh_interval": "5s",
-       "number_of_shards": "1",
-       "number_of_replicas": "2"
-      }
-    },
-    "mappings": {},
-    "aliases": {}
+       "template": {
+          "settings": {
+            "number_of_shards": 1,
+            "number_of_replicas": 1,
+            "index.lifecycle.name": "dee"
+          } 
+        }
     }
 
