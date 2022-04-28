@@ -6,8 +6,19 @@ metadata:
 data:
   entrypoint.sh: |
     #!/bin/sh
+
+    # create ilm 
     curl -X PUT "http://elasticsearch.logging.svc:9200/_ilm/policy/kube-logs" -H'Content-Type: application/json' -d '{"policy":{"phases":{"hot":{"min_age":"0ms","actions":{"rollover":{"max_age":"3d","max_size":"10gb"}}},"delete":{"min_age":"1d","actions":{"delete":{}}}}}}'
     curl -X PUT "http://elasticsearch.logging.svc:9200/_ilm/policy/dee-logs" -H'Content-Type: application/json' -d '{"policy":{"phases":{"hot":{"min_age":"0ms","actions":{"rollover":{"max_age":"3d","max_size":"10gb"}}},"delete":{"min_age":"1d","actions":{"delete":{}}}}}}'  
+    curl -X PUT "http://elasticsearch.logging.svc:9200/_ilm/policy/monitoring-logs" -H'Content-Type: application/json' -d '{"policy":{"phases":{"hot":{"min_age":"0ms","actions":{"rollover":{"max_age":"3d","max_size":"10gb"}}},"delete":{"min_age":"1d","actions":{"delete":{}}}}}}'  
+    curl -X PUT "http://elasticsearch.logging.svc:9200/_ilm/policy/logging-logs" -H'Content-Type: application/json' -d '{"policy":{"phases":{"hot":{"min_age":"0ms","actions":{"rollover":{"max_age":"3d","max_size":"10gb"}}},"delete":{"min_age":"1d","actions":{"delete":{}}}}}}'  
+
+    #create data views
+    curl -X POST "kibana.logging.svc:5601/api/index_patterns/index_pattern" -H 'kbn-xsrf: true' -H 'Content-Type: application/json' -d '{ "override": true,"index_pattern": { "title": "logging-*"}}'
+    curl -X POST "kibana.logging.svc:5601/api/index_patterns/index_pattern" -H 'kbn-xsrf: true' -H 'Content-Type: application/json' -d '{ "override": true,"index_pattern": { "title": "kube-system-*" }}'
+    curl -X POST "kibana.logging.svc:5601/api/index_patterns/index_pattern" -H 'kbn-xsrf: true' -H 'Content-Type: application/json' -d '{ "override": true,"index_pattern": { "title": "dee-*" }}'
+    curl -X POST "kibana.logging.svc:5601/api/index_patterns/index_pattern" -H 'kbn-xsrf: true' -H 'Content-Type: application/json' -d '{ "override": true,"index_pattern": { "title": "ingress-nginx-*" }}'
+    curl -X POST "kibana.logging.svc:5601/api/index_patterns/index_pattern" -H 'kbn-xsrf: true' -H 'Content-Type: application/json' -d '{ "override": true,"index_pattern": { "title": "monitoring-*" }}'
 ---
 apiVersion: v1
 kind: ConfigMap
@@ -23,7 +34,45 @@ data:
       </log>
     </system>
     @include kubernetes.conf
+    @include this_node.conf
   
+  this_node.conf: |  
+    <source>
+      @type tail
+      @id in_tail_container_logs
+      path /var/log/containers/*.log
+      pos_file fluentd-docker.pos
+      read_from_head true
+      tag kubernetes.*
+      <parse>
+        @type multi_format
+        <pattern>
+          format json
+          time_key time
+          time_type string
+          time_format "%Y-%m-%dT%H:%M:%S.%NZ"
+          keep_time_key false
+        </pattern>
+        <pattern>
+          format regexp
+          expression /^(?<time>.+) (?<stream>stdout|stderr)( (?<logtag>.))? (?<log>.*)$/
+          time_format '%Y-%m-%dT%H:%M:%S.%N%:z'
+          keep_time_key false
+        </pattern>
+      </parse>
+    </source>
+
+    <filter kubernetes.var.log.containers.**.log>
+      @type kubernetes_metadata
+    </filter>
+    
+    <match kubernetes.var.log.containers.**.log>
+     # @type file
+     # path /logs/${record["kubernetes"]["pod_name"]}
+      @type stdout     
+      format json
+    </match>
+
   system.conf: |
     <match fluent.**>
       @type copy
@@ -84,7 +133,6 @@ data:
       enable_ilm true
       ilm_policy {}
       ilm_policy_id dee-logs
-      #ilm_policy_overwrite  true
 
       log_es_400_reason true
       reconnect_on_error true
@@ -124,7 +172,6 @@ data:
       enable_ilm true
       ilm_policy {}
       ilm_policy_id kube-logs
-      #ilm_policy_overwrite  true
       log_es_400_reason true
       reconnect_on_error true
       reload_on_failure true
@@ -142,7 +189,8 @@ data:
        "index_patterns": [
          "kube-system*",
          "ingress-nginx*",
-         "logging*"
+         "logging*",
+         "monitoring*"
        ],                   
        "template": {
           "settings": {

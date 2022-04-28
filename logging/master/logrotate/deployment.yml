@@ -1,0 +1,40 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: logrotate
+  namespace: logging
+  labels:
+    app: logrotate
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: logratate
+  template:
+    metadata:
+      labels:
+        app: logratate
+    spec:
+      containers:
+      - name: logrotate
+        imagePullPolicy: IfNotPresent
+        image: blacklabelops/logrotate
+#        resources:
+#          limits:
+#            memory: 512Mi
+#          requests:
+#            cpu: 100m
+#            memory: 200Mi
+        volumeMounts:
+        - name: logs
+          mountPath: /logs
+        - name: logrotate-config
+          mountPath: /etc/logrotate.d/inner-logs
+          subPath: inner-logs
+      volumes:
+      - name: logs
+        persistentVolumeClaim:
+          claimName: fluentd
+      - name: logrotate-config
+        configMap:
+          name: logrotate-config

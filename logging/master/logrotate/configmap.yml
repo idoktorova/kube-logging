@@ -1,0 +1,16 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: logrotate-config
+  namespace: logging
+  labels:
+    app: logrotate
+data:
+  inner-logs: |
+    /logs/*.log {
+      daily
+      rotate 5
+      size 1M
+      compress
+      delaycompress
+    }
