@@ -30,8 +30,7 @@ spec:
       containers:
       - name: fluentd
         imagePullPolicy: IfNotPresent
-#        image: fluent/fluentd:edge-debian
-        image: test_fluent:latest
+        image: idoktorova/fluentd:latest
         env:
           - name: ELASTICSEARCH_USER
             valueFrom: 
@@ -56,7 +55,7 @@ spec:
 #            cpu: 100m
 #            memory: 200Mi
         ports:
-        - containerPort: 9881
+        - containerPort: 9880
         volumeMounts:
         - name: logs
           mountPath: /logs

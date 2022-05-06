@@ -5,10 +5,9 @@ metadata:
   namespace: logging
 data:
   kibana.yml: |
-    ---
     server.name: kibana
     server.host: "0.0.0.0"
-    #server.basePath: "/api/v1/proxy/namespaces/kibana/services/kibana-logging"
+    #server.basePath: "/api/v1/proxy/namespaces/logging/services/kibana"
     elasticsearch.hosts: ["http://elasticsearch.logging.svc:9200"]
     #monitoring.ui.container.elasticsearch.enabled: true
     xpack.fleet.agents.enabled: false
@@ -23,3 +22,5 @@ data:
     # xpack.monitoring.kibana.collection.enabled: false
     #logging.silent: false
     #logging.quiet: false
+    #server.rewriteBasePath: true
+    #server.publicBaseUrl: https://ext-mess-web.escape-team.tech

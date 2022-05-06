@@ -38,9 +38,9 @@ spec:
 #            requests:
 #              cpu: 100m
 #              memory: 2Gi
-          volumeMounts:
-            - mountPath: /var/lib/grafana
-              name: grafana
+#          volumeMounts:
+#            - mountPath: /var/lib/grafana
+#              name: grafana
 #            - mountPath: /etc/grafana
 #              name: grafana-config
       volumes:
